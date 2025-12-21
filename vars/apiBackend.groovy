@@ -13,9 +13,11 @@ def call() {
                 sh "git checkout \${params.GIT_COMMIT_ID}"
             }
         }
-        stage('Build') {
+        stage('Build Docker Image') {
             echo "Building the project..."
-            echo "HungNS Hello 👋 "
+            def imageName = 'hungns97/be-capstone-project:latest'
+            echo "Build Docker image: \${imageName}"
+            sh "docker build -t \{imageName}"
         }
         stage('Test') {
             parallel(
