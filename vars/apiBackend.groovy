@@ -66,15 +66,15 @@ def call() {
                     ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ec2User}@${ec2IP} '
                         cd /home/${ec2User}
 
-                        docker-compose pull
+                        docker compose pull
 
-                        docker-compose down
+                        docker compose down
 
-                        docker-compose up -d
+                        docker compose up -d
 
                         docker image prune -f
 
-                        docker-compose ps
+                        docker compose ps
                     '
                 """
             }
