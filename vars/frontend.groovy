@@ -8,7 +8,7 @@ def call() {
         stage('Checkout') {
             def commitId = params.GIT_COMMIT_ID ?: 'main'
             echo "Checking out commit: \${commitId}"
-            git url: 'https://github.com/devopsway/devops-project-application-cowsay-frontend', branch: 'main'
+            git url: 'https://github.com/nguyensyhung/fe-capstone-project', branch: 'main'
             if (params.GIT_COMMIT_ID && params.GIT_COMMIT_ID.trim() != '') {
                 sh "git checkout \${params.GIT_COMMIT_ID}"
             }
