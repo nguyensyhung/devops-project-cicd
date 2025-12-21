@@ -16,8 +16,8 @@ def call() {
         stage('Build Docker Image') {
             echo "Building the project..."
             def imageName = "hungns97/be-capstone-project:latest"
-            echo "Building Docker image: \${imageName}"
-            sh "docker build -t \${imageName} ."
+            echo "Building Docker image: ${imageName}"
+            sh "docker build -t ${imageName} ."
             echo "Docker image built successfully"
         }
         stage('Test') {
