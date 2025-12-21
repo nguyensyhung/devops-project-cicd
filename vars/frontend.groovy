@@ -61,8 +61,6 @@ def call() {
                     scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
                         \$ENV_FILE ${ec2User}@${ec2IP}:/tmp/fe.env
 
-                    echo "${ENV_FILE}"
-
                     echo "Deploying Frontend on EC2..."
                     ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ec2User}@${ec2IP} '
                         mkdir -p /home/ubuntu/frontend
@@ -70,6 +68,8 @@ def call() {
                         # Move files
                         mv -f /tmp/fe-docker-compose.yml /home/ubuntu/frontend/docker-compose.yml
                         mv -f /tmp/fe.env /home/ubuntu/frontend/.env
+                        cat /home/ubuntu/frontend/.env
+
 
                         # Set permissions
                         chmod 600 /home/ubuntu/frontend/.env
