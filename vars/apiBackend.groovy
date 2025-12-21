@@ -7,9 +7,6 @@ def call() {
                 string(name: 'GIT_COMMIT_ID', defaultValue: '', description: 'Git commit ID to checkout (leave empty for latest commit)')
             ])
         ])
-        triggers {
-          githubPush()
-        }
         stage('Checkout') {
             def commitId = params.GIT_COMMIT_ID ?: 'main'
             echo "Checking out commit: \${commitId}"

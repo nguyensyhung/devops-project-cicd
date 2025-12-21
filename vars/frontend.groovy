@@ -41,14 +41,51 @@ def call() {
             }
             echo "Docker image pushed successfully to registry"
         }
-        stage('Build Docker Image') {
-            // def imageName = "cowsay-frontend:latest"
-            // echo "Building Docker image: \${imageName}"
-            // sh "docker build -t \${imageName} ."
-            // echo "Docker image built successfully"
-        }
-        stage('Deploy') {
-            echo "Deploying application..."
+        stage('Deploy to EC2') {
+            echo "Deploying Frontend to EC2..."
+            withCredentials([
+                sshUserPrivateKey(
+                    credentialsId: 'ec2-ssh-key',
+                    keyFileVariable: 'SSH_KEY'
+                ),
+                file(
+                    credentialsId: 'fe-capstone-env-file',
+                    variable: 'ENV_FILE'
+                )
+            ]) {
+                sh """
+                    echo "Copying Frontend files to EC2..."
+                    scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
+                        docker-compose.yml ${ec2User}@${ec2IP}:/tmp/fe-docker-compose.yml
+
+                    scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
+                        \$ENV_FILE ${ec2User}@${ec2IP}:/tmp/fe.env
+
+                    echo "Deploying Frontend on EC2..."
+                    ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ec2User}@${ec2IP} '
+                        mkdir -p /home/ubuntu/frontend
+
+                        # Move files
+                        mv -f /tmp/fe-docker-compose.yml /home/ubuntu/frontend/docker-compose.yml
+                        mv -f /tmp/fe.env /home/ubuntu/frontend/.env
+
+                        # Set permissions
+                        chmod 600 /home/ubuntu/frontend/.env
+                        chmod 644 /home/ubuntu/frontend/docker-compose.yml
+
+                        # Deploy
+                        cd /home/ubuntu/frontend
+                        docker compose pull
+                        docker compose down
+                        docker compose up -d
+                        docker image prune -f
+
+                        echo "Frontend container status:"
+                        docker compose ps
+                    '
+                """
+            }
+            echo "Frontend deployment completed successfully"
         }
     }
 }
