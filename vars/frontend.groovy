@@ -29,7 +29,7 @@ def call() {
             echo "Building the project..."
             def imageName = "hungns97/fe-capstone-project:latest"
             echo "Building Docker image: ${imageName}"
-            sh "docker build -t ${imageName} ."
+            sh "docker build -t ${imageName} . --no-cache"
             echo "Docker image built successfully"
         }
         stage('Push to Registry') {
