@@ -1,5 +1,7 @@
 def call() {
     node {
+        def ec2IP = "54.158.216.223"
+        def ec2User = "ubuntu"
         properties([
             parameters([
                 string(name: 'GIT_COMMIT_ID', defaultValue: '', description: 'Git commit ID to checkout (leave empty for latest commit)')
@@ -39,8 +41,53 @@ def call() {
             }
             echo "Docker image pushed successfully to registry"
         }
-        stage('Deploy') {
-            echo "Deploying application..."
+        stage('Deploy to EC2') {
+            echo "Deploying application to EC2..."
+            withCredentials([
+                sshUserPrivateKey(
+                    credentialsId: 'ec2-ssh-key',
+                    keyFileVariable: 'SSH_KEY'
+                ),
+                file(
+                    credentialsId: 'be-capstone-env-file',
+                    variable: 'ENV_FILE'
+                )
+            ]) {
+                sh """
+                    # Copy docker-compose.yml to EC2
+                    scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
+                        docker-compose.yml ${ec2User}@${ec2IP}:/home/${ec2User}/
+
+                    # Copy file .env to EC2
+                    scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
+                        \$ENV_FILE ${ec2User}@${ec2IP}:/home/${ec2User}/.env
+
+                    # Deploy docker-compose
+                    ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ec2User}@${ec2IP} '
+                        cd /home/${ec2User}
+
+                        docker-compose pull
+
+                        docker-compose down
+
+                        docker-compose up -d
+
+                        docker image prune -f
+
+                        docker-compose ps
+                    '
+                """
+            }
+            echo "Deployment completed successfully"
+        }
+        stage('Health Check') {
+            echo "Performing health check..."
+            sleep 10
+            sh """
+                curl -f http://${ec2IP}/health || \
+                curl -f http://${ec2IP}/ || \
+                echo "Warning: Health check endpoint not available"
+            """
         }
     }
 }
