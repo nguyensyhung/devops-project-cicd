@@ -61,6 +61,8 @@ def call() {
                     scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
                         \$ENV_FILE ${ec2User}@${ec2IP}:/tmp/fe.env
 
+                    echo "${ENV_FILE}"
+
                     echo "Deploying Frontend on EC2..."
                     ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ec2User}@${ec2IP} '
                         mkdir -p /home/ubuntu/frontend
