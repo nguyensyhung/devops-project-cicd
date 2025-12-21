@@ -17,7 +17,7 @@ def call() {
             echo "Building the project..."
             def imageName = 'hungns97/be-capstone-project:latest'
             echo "Build Docker image: \${imageName}"
-            sh "docker build -t \{imageName}"
+            sh "docker build -t \${imageName}"
         }
         stage('Test') {
             parallel(
