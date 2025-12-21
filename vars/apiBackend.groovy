@@ -54,26 +54,30 @@ def call() {
                 )
             ]) {
                 sh """
-                    # Copy docker-compose.yml to EC2
+                    echo "Copying files to EC2..."
                     scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
-                        docker-compose.yml ${ec2User}@${ec2IP}:/home/${ec2User}/
+                        docker-compose.yml ubuntu@54.158.216.223:/tmp/docker-compose.yml
 
-                    # Copy file .env to EC2
                     scp -i \$SSH_KEY -o StrictHostKeyChecking=no \
-                        \$ENV_FILE ${ec2User}@${ec2IP}:/home/${ec2User}/.env
+                        \$ENV_FILE ubuntu@54.158.216.223:/tmp/.env
 
-                    # Deploy docker-compose
-                    ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ec2User}@${ec2IP} '
-                        cd /home/${ec2User}
+                    echo "Deploying on EC2..."
+                    ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ubuntu@54.158.216.223 '
+                        mv -f /tmp/docker-compose.yml /home/ubuntu/docker-compose.yml
+                        mv -f /tmp/.env /home/ubuntu/.env
 
+                        # Set permission
+                        chmod 600 /home/ubuntu/.env
+                        chmod 644 /home/ubuntu/docker-compose.yml
+
+                        # Deploy
+                        cd /home/ubuntu
                         docker compose pull
-
                         docker compose down
-
                         docker compose up -d
-
                         docker image prune -f
 
+                        echo "Container status:"
                         docker compose ps
                     '
                 """
